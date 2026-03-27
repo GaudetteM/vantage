@@ -16,11 +16,11 @@ class GameNotifier extends Notifier<GameState?> {
     state = GameState.initial(level);
   }
 
-  void move(Direction direction) {
+  bool tryMove(Direction direction) {
     final current = state;
-    if (current == null) return;
+    if (current == null) return false;
     final next = GameEngine.move(current, direction);
-    if (next == current) return; // nothing changed
+    if (next == current) return false; // blocked move
     state = next;
     if (next.isSolved) {
       ref.read(progressProvider.notifier).recordCompletion(
@@ -29,6 +29,11 @@ class GameNotifier extends Notifier<GameState?> {
             next.rotationCount,
           );
     }
+    return true;
+  }
+
+  void move(Direction direction) {
+    tryMove(direction);
   }
 
   void rotateCW() {

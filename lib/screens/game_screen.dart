@@ -21,6 +21,7 @@ class GameScreen extends ConsumerStatefulWidget {
 
 class _GameScreenState extends ConsumerState<GameScreen> {
   final FocusNode _focusNode = FocusNode();
+  int _blockedMoveTick = 0;
 
   @override
   void initState() {
@@ -44,16 +45,16 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     switch (event.logicalKey) {
       case LogicalKeyboardKey.arrowUp:
       case LogicalKeyboardKey.keyW:
-        notifier.move(Direction.up);
+        _attemptMove(Direction.up);
       case LogicalKeyboardKey.arrowDown:
       case LogicalKeyboardKey.keyS:
-        notifier.move(Direction.down);
+        _attemptMove(Direction.down);
       case LogicalKeyboardKey.arrowLeft:
       case LogicalKeyboardKey.keyA:
-        notifier.move(Direction.left);
+        _attemptMove(Direction.left);
       case LogicalKeyboardKey.arrowRight:
       case LogicalKeyboardKey.keyD:
-        notifier.move(Direction.right);
+        _attemptMove(Direction.right);
       case LogicalKeyboardKey.keyQ:
         notifier.rotateCCW();
       case LogicalKeyboardKey.keyE:
@@ -63,19 +64,41 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     }
   }
 
+  bool _attemptMove(Direction direction) {
+    final moved = ref.read(gameProvider.notifier).tryMove(direction);
+    if (!moved && mounted) {
+      setState(() => _blockedMoveTick++);
+    }
+    return moved;
+  }
+
   @override
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameProvider);
+    final progressAsync = ref.watch(progressProvider);
     if (gameState == null) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
+    final tutorialCompleted = progressAsync.maybeWhen(
+      data: (progress) =>
+          progress['level_00_tutorial']?.isCompleted ?? false,
+      orElse: () => false,
+    );
+
     // Show victory overlay when solved.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (gameState.isSolved && mounted) _showVictoryDialog(gameState);
     });
+
+    Widget board = BoardWidget(gameState: gameState);
+    if (_blockedMoveTick > 0) {
+      board = board
+          .animate(key: ValueKey(_blockedMoveTick))
+          .shake(duration: 220.ms, hz: 6, offset: const Offset(8, 0));
+    }
 
     return KeyboardListener(
       focusNode: _focusNode,
@@ -100,7 +123,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               onRotateCCW: () => ref.read(gameProvider.notifier).rotateCCW(),
               onReset: () => ref.read(gameProvider.notifier).reset(),
             ),
-            if (widget.level.id == 'level_00_tutorial')
+            if (widget.level.id == 'level_00_tutorial' && !tutorialCompleted)
               Container(
                 width: double.infinity,
                 padding:
@@ -119,7 +142,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   child: SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
-                      child: BoardWidget(gameState: gameState),
+                      child: board,
                     ),
                   ),
                 ),
@@ -127,7 +150,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             ),
             _DirectionPad(
               rotationDeg: gameState.rotationDeg,
-              onMove: (d) => ref.read(gameProvider.notifier).move(d),
+              onMove: _attemptMove,
             ),
           ],
         ),
@@ -140,11 +163,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     final dx = velocity.pixelsPerSecond.dx;
     final dy = velocity.pixelsPerSecond.dy;
     if (dx.abs() > dy.abs()) {
-      if (dx > threshold) ref.read(gameProvider.notifier).move(Direction.right);
-      if (dx < -threshold) ref.read(gameProvider.notifier).move(Direction.left);
+      if (dx > threshold) _attemptMove(Direction.right);
+      if (dx < -threshold) _attemptMove(Direction.left);
     } else {
-      if (dy > threshold) ref.read(gameProvider.notifier).move(Direction.down);
-      if (dy < -threshold) ref.read(gameProvider.notifier).move(Direction.up);
+      if (dy > threshold) _attemptMove(Direction.down);
+      if (dy < -threshold) _attemptMove(Direction.up);
     }
   }
 
