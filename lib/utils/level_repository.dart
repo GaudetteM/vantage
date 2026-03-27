@@ -26,6 +26,21 @@ List<List<Cell>> _buildGrid(List<List<CellType>> types) {
 // Level catalogue
 // ---------------------------------------------------------------------------
 
+final Level tutorialLevel = Level(
+  id: 'level_00_tutorial',
+  name: 'Tutorial: Rotate to Open',
+  gridRows: 3,
+  gridCols: 5,
+  startPos: const Position(1, 0),
+  goalPos: const Position(1, 4),
+  parRotations: 1,
+  grid: _buildGrid([
+    [w, w, w, w, w],
+    [s, f, pE, f, g],
+    [w, w, w, w, w],
+  ]),
+);
+
 final Level level1 = Level(
   id: 'level_01',
   name: 'First Glance',
@@ -81,4 +96,4 @@ final Level level3 = Level(
 );
 
 /// All levels in order.
-final List<Level> allLevels = [level1, level2, level3];
+final List<Level> allLevels = [tutorialLevel, level1, level2, level3];

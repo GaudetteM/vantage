@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart' hide Direction;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../utils/level_repository.dart';
 import '../utils/vantage_theme.dart';
 import '../widgets/board_widget.dart';
 import '../widgets/hud_bar.dart';
@@ -99,6 +100,18 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               onRotateCCW: () => ref.read(gameProvider.notifier).rotateCCW(),
               onReset: () => ref.read(gameProvider.notifier).reset(),
             ),
+            if (widget.level.id == 'level_00_tutorial')
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                color: VantageTheme.surface.withAlpha(180),
+                child: const Text(
+                  'Tutorial: the purple gate opens only at one rotation. Rotate once, then move to the star.',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             Expanded(
               child: GestureDetector(
                 onPanEnd: (details) => _handleSwipe(details.velocity),
@@ -137,6 +150,10 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   void _showVictoryDialog(GameState gameState) {
     if (!mounted) return;
+    final currentIdx = allLevels.indexWhere((l) => l.id == gameState.level.id);
+    final hasNextLevel = currentIdx >= 0 && currentIdx + 1 < allLevels.length;
+    final nextLevel = hasNextLevel ? allLevels[currentIdx + 1] : null;
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -144,9 +161,18 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         moveCount: gameState.moveCount,
         rotationCount: gameState.rotationCount,
         parRotations: widget.level.parRotations,
+        hasNextLevel: hasNextLevel,
         onNext: () {
           Navigator.of(context).pop(); // close dialog
-          Navigator.of(context).pop(); // back to level select
+          if (nextLevel != null) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute<void>(
+                builder: (_) => GameScreen(level: nextLevel),
+              ),
+            );
+          } else {
+            Navigator.of(context).pop(); // back to level select
+          }
         },
         onReplay: () {
           Navigator.of(context).pop();
@@ -215,6 +241,7 @@ class _VictoryDialog extends StatelessWidget {
   final int moveCount;
   final int rotationCount;
   final int parRotations;
+  final bool hasNextLevel;
   final VoidCallback onNext;
   final VoidCallback onReplay;
 
@@ -222,6 +249,7 @@ class _VictoryDialog extends StatelessWidget {
     required this.moveCount,
     required this.rotationCount,
     required this.parRotations,
+    required this.hasNextLevel,
     required this.onNext,
     required this.onReplay,
   });
@@ -265,7 +293,7 @@ class _VictoryDialog extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: onNext,
                   icon: const Icon(Icons.arrow_forward, size: 16),
-                  label: const Text('LEVELS'),
+                  label: Text(hasNextLevel ? 'NEXT' : 'LEVELS'),
                 ),
               ],
             ),
