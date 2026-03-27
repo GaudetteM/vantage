@@ -11,6 +11,7 @@ import '../widgets/hud_bar.dart';
 import '../widgets/settings_sheet.dart';
 import '../widgets/star_rating.dart';
 import '../models/level_progress.dart' show starsEarned;
+import 'completion_screen.dart';
 
 /// The main puzzle-play screen.
 class GameScreen extends ConsumerStatefulWidget {
@@ -81,13 +82,10 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameProvider);
     if (gameState == null || gameState.level.id != widget.level.id) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (!gameState.isSolved &&
-        _victoryShownForLevelId == gameState.level.id) {
+    if (!gameState.isSolved && _victoryShownForLevelId == gameState.level.id) {
       _victoryShownForLevelId = null;
     }
 
@@ -148,13 +146,29 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             Expanded(
               child: GestureDetector(
                 onPanEnd: (details) => _handleSwipe(details.velocity),
-                child: Center(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: board,
-                    ),
-                  ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Scrollbar(
+                      thumbVisibility: false,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SingleChildScrollView(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minWidth: constraints.maxWidth,
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(24),
+                                child: board,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -206,7 +220,9 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     final levelsNow = ref.read(levelsProvider).valueOrNull;
     var hasNextLevel = false;
     if (levelsNow != null) {
-      final currentIdx = levelsNow.indexWhere((l) => l.id == gameState.level.id);
+      final currentIdx = levelsNow.indexWhere(
+        (l) => l.id == gameState.level.id,
+      );
       hasNextLevel = currentIdx >= 0 && currentIdx + 1 < levelsNow.length;
     }
 
@@ -224,16 +240,35 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               (levelsNow ?? await ref.read(levelsProvider.future)) ?? <Level>[];
           if (!mounted) return;
 
-          final idx = resolvedLevels.indexWhere((l) => l.id == gameState.level.id);
-          final nextLevel =
-              idx >= 0 && idx + 1 < resolvedLevels.length ? resolvedLevels[idx + 1] : null;
+          final idx = resolvedLevels.indexWhere(
+            (l) => l.id == gameState.level.id,
+          );
+          final nextLevel = idx >= 0 && idx + 1 < resolvedLevels.length
+              ? resolvedLevels[idx + 1]
+              : null;
 
           if (nextLevel != null) {
             Navigator.of(context).pushReplacement(
               fadeSlideRoute<void>(GameScreen(level: nextLevel)),
             );
           } else {
-            Navigator.of(context).pop(); // back to level select
+            await ref
+                .read(progressProvider.notifier)
+                .recordCompletion(
+                  gameState.level.id,
+                  gameState.moveCount,
+                  gameState.rotationCount,
+                );
+            if (!mounted) return;
+            Navigator.of(context).pushReplacement(
+              fadeSlideRoute<void>(
+                CompletionScreen(
+                  finalLevel: widget.level,
+                  finalMoveCount: gameState.moveCount,
+                  finalRotationCount: gameState.rotationCount,
+                ),
+              ),
+            );
           }
         },
         onReplay: () {
@@ -271,7 +306,11 @@ class _LevelHintSheet extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: VantageTheme.accentDim, width: 1.2),
             boxShadow: const [
-              BoxShadow(color: Colors.black45, blurRadius: 24, offset: Offset(0, 12)),
+              BoxShadow(
+                color: Colors.black45,
+                blurRadius: 24,
+                offset: Offset(0, 12),
+              ),
             ],
           ),
           child: Column(
@@ -280,7 +319,10 @@ class _LevelHintSheet extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.lightbulb_outline, color: VantageTheme.accent),
+                  const Icon(
+                    Icons.lightbulb_outline,
+                    color: VantageTheme.accent,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -307,7 +349,11 @@ class _LevelHintSheet extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 hint,
-                style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.45),
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  height: 1.45,
+                ),
               ),
               const SizedBox(height: 16),
               Align(
@@ -333,10 +379,7 @@ class _DirectionPad extends StatelessWidget {
   final int rotationDeg;
   final void Function(Direction) onMove;
 
-  const _DirectionPad({
-    required this.rotationDeg,
-    required this.onMove,
-  });
+  const _DirectionPad({required this.rotationDeg, required this.onMove});
 
   @override
   Widget build(BuildContext context) {
@@ -414,18 +457,18 @@ class _VictoryDialog extends StatelessWidget {
           children: [
             StarRating(stars: stars, size: 40, animate: true),
             const SizedBox(height: 14),
-            Text(
-              headline,
-              style: Theme.of(context).textTheme.headlineLarge,
-            ),
+            Text(headline, style: Theme.of(context).textTheme.headlineLarge),
             const SizedBox(height: 8),
-            Text('Moves: $moveCount',
-                style: Theme.of(context).textTheme.bodyMedium),
-            Text('Rotations: $rotationCount (par $parRotations)',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: stars == 3
-                        ? VantageTheme.accent
-                        : Colors.white54)),
+            Text(
+              'Moves: $moveCount',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            Text(
+              'Rotations: $rotationCount (par $parRotations)',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: stars == 3 ? VantageTheme.accent : Colors.white54,
+              ),
+            ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -438,7 +481,7 @@ class _VictoryDialog extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: onNext,
                   icon: const Icon(Icons.arrow_forward, size: 16),
-                  label: Text(hasNextLevel ? 'NEXT' : 'LEVELS'),
+                  label: Text(hasNextLevel ? 'NEXT' : 'FINISH'),
                 ),
               ],
             ),
