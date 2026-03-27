@@ -76,7 +76,7 @@ class ProgressNotifier extends AsyncNotifier<Map<String, LevelProgress>> {
     );
 
     // Unlock the next level if it exists.
-  final levelIds = levels.map((l) => l.id).toList();
+    final levelIds = levels.map((l) => l.id).toList();
     final idx = levelIds.indexOf(levelId);
     final next =
         idx >= 0 && idx + 1 < levelIds.length ? levelIds[idx + 1] : null;
@@ -93,6 +93,14 @@ class ProgressNotifier extends AsyncNotifier<Map<String, LevelProgress>> {
       jsonEncode(newMap.map((k, v) => MapEntry(k, v.toJson()))),
     );
     state = AsyncData(newMap);
+  }
+
+  Future<void> resetProgress() async {
+    final levels = await loadLevels();
+    final defaults = _defaultProgress(levels);
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await prefs.remove(_prefKey);
+    state = AsyncData(defaults);
   }
 }
 
