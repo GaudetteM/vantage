@@ -1,0 +1,37 @@
+name: vantage
+description: "A perspective-shift puzzle maze game."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.8
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Animations
+  flutter_animate: ^4.5.0
+
+  # Persistent storage (level progress, settings)
+  shared_preferences: ^2.3.2
+
+  # Audio
+  audioplayers: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/levels/
+    - assets/audio/
+    - assets/images/
