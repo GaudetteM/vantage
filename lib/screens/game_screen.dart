@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart' hide Direction;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../utils/routes.dart';
 import '../utils/vantage_theme.dart';
 import '../widgets/board_widget.dart';
 import '../widgets/hud_bar.dart';
@@ -229,9 +230,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
           if (nextLevel != null) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute<void>(
-                builder: (_) => GameScreen(level: nextLevel),
-              ),
+              fadeSlideRoute<void>(GameScreen(level: nextLevel)),
             );
           } else {
             Navigator.of(context).pop(); // back to level select

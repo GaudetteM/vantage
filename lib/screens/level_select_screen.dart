@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../utils/routes.dart';
 import '../models/level_progress.dart' show starsEarned;
 import '../utils/vantage_theme.dart';
 import '../widgets/settings_sheet.dart';
@@ -111,12 +112,8 @@ class _LevelCard extends StatelessWidget {
     return GestureDetector(
       onTap: locked
           ? null
-          : () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => GameScreen(level: level),
-                ),
-              ),
+          : () => Navigator.of(context)
+                .push(fadeSlideRoute<void>(GameScreen(level: level))),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
