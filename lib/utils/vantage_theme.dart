@@ -19,6 +19,10 @@ class VantageTheme {
   static const Color perspectiveLockedArrow = Color(0xFF3A3A6A);  // dim arrow
   static const Color perspectiveActiveColor = Color(0xFF7C4DFF);
   static const Color perspectiveActiveArrow = Color(0xFFB39DFF);  // bright arrow
+  static const Color perspectiveNorthColor = Color(0xFF4FC3F7); // cyan
+  static const Color perspectiveEastColor = Color(0xFFFFC857); // amber
+  static const Color perspectiveSouthColor = Color(0xFFE57373); // red
+  static const Color perspectiveWestColor = Color(0xFF81C784); // green
 
   static ThemeData get theme => ThemeData(
         useMaterial3: true,

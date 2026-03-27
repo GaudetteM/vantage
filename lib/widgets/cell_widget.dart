@@ -44,7 +44,7 @@ class CellWidget extends StatelessWidget {
       CellType.perspectiveSouth ||
       CellType.perspectiveWest =>
         cell.type.isWalkable(rotationDeg)
-            ? VantageTheme.perspectiveActiveColor.withAlpha(80)
+            ? _perspectiveDirectionColor.withAlpha(70)
             : VantageTheme.perspectiveHiddenColor,
     };
   }
@@ -63,15 +63,24 @@ class CellWidget extends StatelessWidget {
       return Border.all(color: VantageTheme.goalColor, width: 1.5);
     }
     if (_isPerspective) {
+      final active = cell.type.isWalkable(rotationDeg);
       return Border.all(
-        color: cell.type.isWalkable(rotationDeg)
-            ? VantageTheme.perspectiveActiveColor
-            : VantageTheme.perspectiveLockedArrow,
-        width: 1.5,
+        color: active
+            ? _perspectiveDirectionColor
+            : _perspectiveDirectionColor.withAlpha(140),
+        width: active ? 2 : 1.5,
       );
     }
     return null;
   }
+
+  Color get _perspectiveDirectionColor => switch (cell.type) {
+        CellType.perspectiveNorth => VantageTheme.perspectiveNorthColor,
+        CellType.perspectiveEast => VantageTheme.perspectiveEastColor,
+        CellType.perspectiveSouth => VantageTheme.perspectiveSouthColor,
+        CellType.perspectiveWest => VantageTheme.perspectiveWestColor,
+        _ => VantageTheme.perspectiveActiveColor,
+      };
 
   bool get _isPerspective => switch (cell.type) {
         CellType.perspectiveNorth ||
