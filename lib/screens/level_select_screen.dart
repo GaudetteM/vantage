@@ -4,8 +4,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../models/level_progress.dart' show starsEarned;
 import '../utils/vantage_theme.dart';
 import '../widgets/settings_sheet.dart';
+import '../widgets/star_rating.dart';
 import 'game_screen.dart';
 
 /// Level-selection hub screen.
@@ -94,6 +96,14 @@ class _LevelCard extends StatelessWidget {
     required this.index,
   });
 
+  Color _borderColor(LevelProgress p, int par) {
+    if (!p.isCompleted) return p.isUnlocked ? VantageTheme.accentDim : Colors.white12;
+    final stars = starsEarned(p.bestRotations!, par);
+    if (stars == 3) return VantageTheme.goalColor;
+    if (stars == 2) return VantageTheme.goalColor.withAlpha(160);
+    return VantageTheme.goalColor.withAlpha(80);
+  }
+
   @override
   Widget build(BuildContext context) {
     final locked = !progress.isUnlocked;
@@ -113,11 +123,7 @@ class _LevelCard extends StatelessWidget {
           color: locked ? VantageTheme.surface.withAlpha(120) : VantageTheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: progress.isCompleted
-                ? VantageTheme.goalColor
-                : locked
-                    ? Colors.white12
-                    : VantageTheme.accentDim,
+            color: _borderColor(progress, level.parRotations),
             width: 1.5,
           ),
         ),
@@ -127,19 +133,17 @@ class _LevelCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(
-                locked
-                    ? Icons.lock
-                    : progress.isCompleted
-                        ? Icons.star
-                        : Icons.grid_view,
-                color: locked
-                    ? Colors.white24
-                    : progress.isCompleted
-                        ? VantageTheme.goalColor
-                        : VantageTheme.accent,
-                size: 28,
-              ),
+              if (locked)
+                const Icon(Icons.lock, color: Colors.white24, size: 28)
+              else if (progress.isCompleted && progress.bestRotations != null)
+                StarRating(
+                  stars: starsEarned(
+                      progress.bestRotations!, level.parRotations),
+                  size: 20,
+                )
+              else
+                const Icon(Icons.grid_view,
+                    color: VantageTheme.accent, size: 28),
               const SizedBox(height: 6),
               Text(
                 '${index + 1}',
@@ -164,9 +168,9 @@ class _LevelCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    'Best: ${progress.bestRotations} rot.',
+                    '${progress.bestRotations} / par ${level.parRotations}',
                     style: const TextStyle(
-                        color: VantageTheme.goalColor, fontSize: 9),
+                        color: Colors.white38, fontSize: 9),
                   ),
                 ),
             ],

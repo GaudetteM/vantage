@@ -1,3 +1,11 @@
+/// Returns stars earned (1–3) based on rotations vs par.
+/// 3 = at or under par, 2 = one over par, 1 = completed.
+int starsEarned(int bestRotations, int parRotations) {
+  if (bestRotations <= parRotations) return 3;
+  if (bestRotations <= parRotations + 1) return 2;
+  return 1;
+}
+
 /// Tracks per-level player progress persisted to SharedPreferences.
 class LevelProgress {
   final String levelId;

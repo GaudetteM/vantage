@@ -8,6 +8,8 @@ import '../utils/vantage_theme.dart';
 import '../widgets/board_widget.dart';
 import '../widgets/hud_bar.dart';
 import '../widgets/settings_sheet.dart';
+import '../widgets/star_rating.dart';
+import '../models/level_progress.dart' show starsEarned;
 
 /// The main puzzle-play screen.
 class GameScreen extends ConsumerStatefulWidget {
@@ -397,7 +399,12 @@ class _VictoryDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final underPar = rotationCount <= parRotations;
+    final stars = starsEarned(rotationCount, parRotations);
+    final headline = switch (stars) {
+      3 => 'PERFECT SHIFT!',
+      2 => 'GREAT RUN!',
+      _ => 'SOLVED!',
+    };
     return Dialog(
       backgroundColor: VantageTheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -406,12 +413,10 @@ class _VictoryDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.star, color: VantageTheme.goalColor, size: 48)
-                .animate()
-                .scale(duration: 400.ms, curve: Curves.elasticOut),
-            const SizedBox(height: 12),
+            StarRating(stars: stars, size: 40, animate: true),
+            const SizedBox(height: 14),
             Text(
-              underPar ? 'PERFECT SHIFT!' : 'SOLVED!',
+              headline,
               style: Theme.of(context).textTheme.headlineLarge,
             ),
             const SizedBox(height: 8),
@@ -419,7 +424,7 @@ class _VictoryDialog extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium),
             Text('Rotations: $rotationCount (par $parRotations)',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: underPar
+                    color: stars == 3
                         ? VantageTheme.accent
                         : Colors.white54)),
             const SizedBox(height: 24),
