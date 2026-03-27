@@ -1,6 +1,7 @@
 {
   "id": "level_03",
   "name": "Through the Looking Glass",
+  "hint": "This one is about sequencing. Open one route, move, then pivot again.",
   "parRotations": 3,
   "rows": [
     "......G",

@@ -1,6 +1,7 @@
 {
   "id": "level_01",
   "name": "First Glance",
+  "hint": "Not every colored gate needs a rotation. Look for the free route first.",
   "parRotations": 1,
   "rows": [
     "....G",

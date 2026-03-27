@@ -45,6 +45,7 @@ CellType _charToCellType(String ch) {
 Level _parseLevelFromJson(Map<String, dynamic> json) {
   final id = json['id'] as String?;
   final name = json['name'] as String?;
+  final hint = json['hint'] as String?;
   final parRotations = json['parRotations'] as int?;
   final rowsDynamic = json['rows'];
 
@@ -99,6 +100,7 @@ Level _parseLevelFromJson(Map<String, dynamic> json) {
   return Level(
     id: id,
     name: name,
+    hint: hint,
     gridRows: rows.length,
     gridCols: width,
     grid: _buildGrid(gridTypes),

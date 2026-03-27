@@ -1,6 +1,7 @@
 {
   "id": "level_02",
   "name": "Shift & Step",
+  "hint": "One rotation opens the right path, but rotating too early can strand you.",
   "parRotations": 2,
   "rows": [
     ".E...G",

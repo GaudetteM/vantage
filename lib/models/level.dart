@@ -41,6 +41,7 @@ extension DirectionX on Direction {
 class Level {
   final String id;
   final String name;
+  final String? hint;
   final int gridRows;
   final int gridCols;
   final List<List<Cell>> grid; // [row][col]
@@ -51,6 +52,7 @@ class Level {
   const Level({
     required this.id,
     required this.name,
+    this.hint,
     required this.gridRows,
     required this.gridCols,
     required this.grid,

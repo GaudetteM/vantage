@@ -77,18 +77,11 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   @override
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameProvider);
-    final progressAsync = ref.watch(progressProvider);
     if (gameState == null || gameState.level.id != widget.level.id) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
-
-    final tutorialCompleted = progressAsync.maybeWhen(
-      data: (progress) =>
-          progress['level_00_tutorial']?.isCompleted ?? false,
-      orElse: () => false,
-    );
 
     if (!gameState.isSolved &&
         _victoryShownForLevelId == gameState.level.id) {
@@ -125,6 +118,12 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           ),
           centerTitle: true,
           actions: [
+            if (widget.level.hint != null)
+              IconButton(
+                tooltip: 'Hint',
+                icon: const Icon(Icons.lightbulb_outline),
+                onPressed: _showHintSheet,
+              ),
             IconButton(
               tooltip: 'Settings',
               icon: const Icon(Icons.tune),
@@ -142,18 +141,6 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               onRotateCCW: () => ref.read(gameProvider.notifier).rotateCCW(),
               onReset: () => ref.read(gameProvider.notifier).reset(),
             ),
-            if (widget.level.id == 'level_00_tutorial' && !tutorialCompleted)
-              Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                color: VantageTheme.surface.withAlpha(180),
-                child: const Text(
-                  'Tutorial: the purple gate opens only at one rotation. Rotate once, then move to the star.',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
-                  textAlign: TextAlign.center,
-                ),
-              ),
             Expanded(
               child: GestureDetector(
                 onPanEnd: (details) => _handleSwipe(details.velocity),
@@ -174,6 +161,23 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showHintSheet() {
+    final hint = widget.level.hint;
+    if (hint == null) return;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return _LevelHintSheet(
+          name: widget.level.name,
+          hint: hint,
+          parRotations: widget.level.parRotations,
+        );
+      },
     );
   }
 
@@ -238,6 +242,84 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     ).whenComplete(() {
       _isVictoryDialogOpen = false;
     });
+  }
+}
+
+class _LevelHintSheet extends StatelessWidget {
+  final String name;
+  final String hint;
+  final int parRotations;
+
+  const _LevelHintSheet({
+    required this.name,
+    required this.hint,
+    required this.parRotations,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 520),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          decoration: BoxDecoration(
+            color: VantageTheme.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: VantageTheme.accentDim, width: 1.2),
+            boxShadow: const [
+              BoxShadow(color: Colors.black45, blurRadius: 24, offset: Offset(0, 12)),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.lightbulb_outline, color: VantageTheme.accent),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      name.toUpperCase(),
+                      style: const TextStyle(
+                        color: VantageTheme.accent,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'PAR $parRotations',
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                hint,
+                style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.45),
+              ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('CLOSE'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

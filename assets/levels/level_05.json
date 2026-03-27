@@ -1,6 +1,7 @@
 {
   "id": "level_05",
   "name": "Quarter Turn Chain",
+  "hint": "This path wants a clean two-step rhythm. Rotate, move, rotate again.",
   "parRotations": 2,
   "rows": [
     "#######",

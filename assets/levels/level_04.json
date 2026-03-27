@@ -1,6 +1,7 @@
 {
   "id": "level_04",
   "name": "Double Vision",
+  "hint": "Two gates share the same rotation. Spot the repeated color and commit.",
   "parRotations": 1,
   "rows": [
     "#######",

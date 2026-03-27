@@ -1,6 +1,7 @@
 {
   "id": "level_00_tutorial",
   "name": "Tutorial: Rotate to Open",
+  "hint": "Purple gates open only at one rotation. Rotate once, then walk through.",
   "parRotations": 1,
   "rows": [
     "#####",

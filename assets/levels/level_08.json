@@ -1,6 +1,7 @@
 {
   "id": "level_08",
   "name": "Full Cycle",
+  "hint": "Every direction matters here. The shortest route uses the full rotation loop.",
   "parRotations": 4,
   "rows": [
     "###########",

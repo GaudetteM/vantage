@@ -1,6 +1,7 @@
 {
   "id": "level_06",
   "name": "Pivot Break",
+  "hint": "You will need to revisit a direction. Think in pivots, not straight lines.",
   "parRotations": 3,
   "rows": [
     "#######",

@@ -1,6 +1,7 @@
 {
   "id": "level_07",
   "name": "Half Then Quarter",
+  "hint": "A half-turn gets you started, but the finish needs a more precise angle.",
   "parRotations": 3,
   "rows": [
     "#######",
