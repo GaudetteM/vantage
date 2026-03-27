@@ -1,0 +1,10 @@
+{
+  "id": "level_05",
+  "name": "Quarter Turn Chain",
+  "parRotations": 2,
+  "rows": [
+    "#######",
+    "S.E.T.G",
+    "#######"
+  ]
+}

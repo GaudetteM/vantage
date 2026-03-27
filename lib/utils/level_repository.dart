@@ -119,13 +119,31 @@ List<Level>? _levelsCache;
 Future<List<Level>> loadLevels() async {
   if (_levelsCache != null) return _levelsCache!;
 
-  final tutorialLevel = await loadLevelFromAsset(
-    'assets/levels/level_00_tutorial.json',
-  );
-  final level1 = await loadLevelFromAsset('assets/levels/level_01.json');
-  final level2 = await loadLevelFromAsset('assets/levels/level_02.json');
-  final level3 = await loadLevelFromAsset('assets/levels/level_03.json');
+  final indexRaw = await rootBundle.loadString('assets/levels/index.json');
+  final indexJson = jsonDecode(indexRaw) as Map<String, dynamic>;
+  final levelsDynamic = indexJson['levels'];
+  if (levelsDynamic is! List) {
+    throw const FormatException('levels/index.json must contain a list "levels"');
+  }
 
-  _levelsCache = [tutorialLevel, level1, level2, level3];
+  final orderedAssets = levelsDynamic.cast<String>();
+  if (orderedAssets.isEmpty) {
+    throw const FormatException('levels/index.json must list at least one level asset');
+  }
+
+  final duplicates = <String>{};
+  final seen = <String>{};
+  for (final asset in orderedAssets) {
+    if (!seen.add(asset)) duplicates.add(asset);
+  }
+  if (duplicates.isNotEmpty) {
+    throw FormatException(
+      'levels/index.json contains duplicate entries: ${duplicates.join(', ')}',
+    );
+  }
+
+  _levelsCache = [
+    for (final asset in orderedAssets) await loadLevelFromAsset(asset),
+  ];
   return _levelsCache!;
 }
