@@ -1,0 +1,10 @@
+{
+  "id": "level_00_tutorial",
+  "name": "Tutorial: Rotate to Open",
+  "parRotations": 1,
+  "rows": [
+    "#####",
+    "S.E.G",
+    "#####"
+  ]
+}

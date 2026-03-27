@@ -18,28 +18,46 @@ final sharedPreferencesProvider =
 class ProgressNotifier extends AsyncNotifier<Map<String, LevelProgress>> {
   static const _prefKey = 'vantage_progress';
 
+  Map<String, LevelProgress> _defaultProgress(List<Level> levels) {
+    return {
+      for (final level in levels)
+        level.id: LevelProgress(
+          levelId: level.id,
+          isUnlocked: level.id == levels.first.id,
+        ),
+    };
+  }
+
   @override
   Future<Map<String, LevelProgress>> build() async {
+    final levels = await loadLevels();
     final prefs = await ref.watch(sharedPreferencesProvider.future);
     final raw = prefs.getString(_prefKey);
+
+    final defaults = _defaultProgress(levels);
+
     if (raw == null) {
-      // First run: unlock level 1 only.
-      return {
-        for (final level in allLevels)
-          level.id: LevelProgress(
-            levelId: level.id,
-            isUnlocked: level.id == allLevels.first.id,
-          ),
-      };
+      return defaults;
     }
+
     final decoded = jsonDecode(raw) as Map<String, dynamic>;
-    return decoded.map(
+    final saved = decoded.map(
       (k, v) => MapEntry(k, LevelProgress.fromJson(v as Map<String, dynamic>)),
     );
+
+    // Merge saved progress over defaults so newly added levels (like tutorial)
+    // still exist in the map, and ensure the first level is always unlocked.
+    final merged = Map<String, LevelProgress>.from(defaults)..addAll(saved);
+    final firstId = levels.first.id;
+    merged[firstId] = (merged[firstId] ?? LevelProgress(levelId: firstId))
+        .copyWith(isUnlocked: true);
+
+    return merged;
   }
 
   Future<void> recordCompletion(
       String levelId, int moves, int rotations) async {
+    final levels = await loadLevels();
     final prefs = await ref.read(sharedPreferencesProvider.future);
     final current = state.valueOrNull ?? {};
     final existing = current[levelId] ??
@@ -58,7 +76,7 @@ class ProgressNotifier extends AsyncNotifier<Map<String, LevelProgress>> {
     );
 
     // Unlock the next level if it exists.
-    final levelIds = allLevels.map((l) => l.id).toList();
+  final levelIds = levels.map((l) => l.id).toList();
     final idx = levelIds.indexOf(levelId);
     final next =
         idx >= 0 && idx + 1 < levelIds.length ? levelIds[idx + 1] : null;

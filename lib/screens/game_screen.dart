@@ -4,7 +4,6 @@ import 'package:flutter_animate/flutter_animate.dart' hide Direction;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/providers.dart';
-import '../utils/level_repository.dart';
 import '../utils/vantage_theme.dart';
 import '../widgets/board_widget.dart';
 import '../widgets/hud_bar.dart';
@@ -22,6 +21,8 @@ class GameScreen extends ConsumerStatefulWidget {
 class _GameScreenState extends ConsumerState<GameScreen> {
   final FocusNode _focusNode = FocusNode();
   int _blockedMoveTick = 0;
+  bool _isVictoryDialogOpen = false;
+  String? _victoryShownForLevelId;
 
   @override
   void initState() {
@@ -76,7 +77,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameProvider);
     final progressAsync = ref.watch(progressProvider);
-    if (gameState == null) {
+    if (gameState == null || gameState.level.id != widget.level.id) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
@@ -88,9 +89,19 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       orElse: () => false,
     );
 
+    if (!gameState.isSolved &&
+        _victoryShownForLevelId == gameState.level.id) {
+      _victoryShownForLevelId = null;
+    }
+
     // Show victory overlay when solved.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (gameState.isSolved && mounted) _showVictoryDialog(gameState);
+      if (!mounted) return;
+      if (gameState.isSolved &&
+          !_isVictoryDialogOpen &&
+          _victoryShownForLevelId != gameState.level.id) {
+        _showVictoryDialog(gameState);
+      }
     });
 
     Widget board = BoardWidget(gameState: gameState);
@@ -173,20 +184,34 @@ class _GameScreenState extends ConsumerState<GameScreen> {
 
   void _showVictoryDialog(GameState gameState) {
     if (!mounted) return;
-    final currentIdx = allLevels.indexWhere((l) => l.id == gameState.level.id);
-    final hasNextLevel = currentIdx >= 0 && currentIdx + 1 < allLevels.length;
-    final nextLevel = hasNextLevel ? allLevels[currentIdx + 1] : null;
+    _isVictoryDialogOpen = true;
+    _victoryShownForLevelId = gameState.level.id;
+
+    final levelsNow = ref.read(levelsProvider).valueOrNull;
+    var hasNextLevel = false;
+    if (levelsNow != null) {
+      final currentIdx = levelsNow.indexWhere((l) => l.id == gameState.level.id);
+      hasNextLevel = currentIdx >= 0 && currentIdx + 1 < levelsNow.length;
+    }
 
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => _VictoryDialog(
+      builder: (dialogContext) => _VictoryDialog(
         moveCount: gameState.moveCount,
         rotationCount: gameState.rotationCount,
         parRotations: widget.level.parRotations,
         hasNextLevel: hasNextLevel,
-        onNext: () {
-          Navigator.of(context).pop(); // close dialog
+        onNext: () async {
+          Navigator.of(dialogContext).pop(); // close dialog
+          final resolvedLevels =
+              (levelsNow ?? await ref.read(levelsProvider.future)) ?? <Level>[];
+          if (!mounted) return;
+
+          final idx = resolvedLevels.indexWhere((l) => l.id == gameState.level.id);
+          final nextLevel =
+              idx >= 0 && idx + 1 < resolvedLevels.length ? resolvedLevels[idx + 1] : null;
+
           if (nextLevel != null) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute<void>(
@@ -198,11 +223,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
           }
         },
         onReplay: () {
-          Navigator.of(context).pop();
+          Navigator.of(dialogContext).pop();
           ref.read(gameProvider.notifier).reset();
         },
       ),
-    );
+    ).whenComplete(() {
+      _isVictoryDialogOpen = false;
+    });
   }
 }
 

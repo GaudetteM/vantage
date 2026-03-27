@@ -60,7 +60,7 @@ final gameProvider = NotifierProvider<GameNotifier, GameState?>(
 );
 
 // ---------------------------------------------------------------------------
-// Convenience: ordered list of all levels (no async needed)
+// Convenience: ordered list of all levels
 // ---------------------------------------------------------------------------
 
-final levelsProvider = Provider<List<Level>>((ref) => allLevels);
+final levelsProvider = FutureProvider<List<Level>>((ref) => loadLevels());

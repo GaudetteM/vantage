@@ -12,7 +12,7 @@ class LevelSelectScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final levels = ref.watch(levelsProvider);
+    final levelsAsync = ref.watch(levelsProvider);
     final progressAsync = ref.watch(progressProvider);
 
     return Scaffold(
@@ -28,33 +28,34 @@ class LevelSelectScreen extends ConsumerWidget {
         ),
         centerTitle: true,
       ),
-      body: progressAsync.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
-        error: (e, _) =>
-            Center(child: Text('Error: $e')),
-        data: (progress) => GridView.builder(
-          padding: const EdgeInsets.all(24),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 160,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            mainAxisExtent: 160,
+      body: levelsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Error: $e')),
+        data: (levels) => progressAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('Error: $e')),
+          data: (progress) => GridView.builder(
+            padding: const EdgeInsets.all(24),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 160,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              mainAxisExtent: 160,
+            ),
+            itemCount: levels.length,
+            itemBuilder: (context, i) {
+              final level = levels[i];
+              final p = progress[level.id] ?? LevelProgress(levelId: level.id);
+              return _LevelCard(
+                level: level,
+                progress: p,
+                index: i,
+              )
+                  .animate(delay: (80 * i).ms)
+                  .fadeIn(duration: 300.ms)
+                  .slideY(begin: 0.2, end: 0);
+            },
           ),
-          itemCount: levels.length,
-          itemBuilder: (context, i) {
-            final level = levels[i];
-            final p = progress[level.id] ??
-                LevelProgress(levelId: level.id);
-            return _LevelCard(
-              level: level,
-              progress: p,
-              index: i,
-            )
-                .animate(delay: (80 * i).ms)
-                .fadeIn(duration: 300.ms)
-                .slideY(begin: 0.2, end: 0);
-          },
         ),
       ),
     );
