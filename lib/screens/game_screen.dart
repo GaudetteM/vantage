@@ -137,6 +137,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               moveCount: gameState.moveCount,
               rotationCount: gameState.rotationCount,
               parRotations: widget.level.parRotations,
+              currentRotationDeg: gameState.rotationDeg,
               onRotateCW: () => ref.read(gameProvider.notifier).rotateCW(),
               onRotateCCW: () => ref.read(gameProvider.notifier).rotateCCW(),
               onReset: () => ref.read(gameProvider.notifier).reset(),
