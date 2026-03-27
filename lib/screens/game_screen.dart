@@ -7,6 +7,7 @@ import '../providers/providers.dart';
 import '../utils/vantage_theme.dart';
 import '../widgets/board_widget.dart';
 import '../widgets/hud_bar.dart';
+import '../widgets/settings_sheet.dart';
 
 /// The main puzzle-play screen.
 class GameScreen extends ConsumerStatefulWidget {
@@ -123,6 +124,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           centerTitle: true,
+          actions: [
+            IconButton(
+              tooltip: 'Settings',
+              icon: const Icon(Icons.tune),
+              onPressed: () => showSettingsSheet(context),
+            ),
+          ],
         ),
         body: Column(
           children: [
