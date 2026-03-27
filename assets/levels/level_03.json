@@ -1,0 +1,14 @@
+{
+  "id": "level_03",
+  "name": "Through the Looking Glass",
+  "parRotations": 3,
+  "rows": [
+    "......G",
+    "#N#E#T#",
+    ".......",
+    "#W#.#N#",
+    "...E...",
+    "#T###W#",
+    "S......"
+  ]
+}

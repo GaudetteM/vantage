@@ -1,0 +1,12 @@
+{
+  "id": "level_01",
+  "name": "First Glance",
+  "parRotations": 1,
+  "rows": [
+    "....G",
+    "##.##",
+    ".N.N.",
+    ".###.",
+    "S...."
+  ]
+}

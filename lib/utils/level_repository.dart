@@ -4,16 +4,8 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import '../models/models.dart';
 
-// Shorthand constructors for compact level definitions.
+// Shorthand constructor for compact grid building.
 Cell _c(int r, int c, CellType t) => Cell(row: r, col: c, type: t);
-const f = CellType.floor;
-const w = CellType.wall;
-const s = CellType.start;
-const g = CellType.goal;
-const pN = CellType.perspectiveNorth;
-const pE = CellType.perspectiveEast;
-const pS = CellType.perspectiveSouth;
-const pW = CellType.perspectiveWest;
 
 List<List<Cell>> _buildGrid(List<List<CellType>> types) {
   return List.generate(
@@ -51,10 +43,25 @@ CellType _charToCellType(String ch) {
 }
 
 Level _parseLevelFromJson(Map<String, dynamic> json) {
-  final id = json['id'] as String;
-  final name = json['name'] as String;
-  final parRotations = json['parRotations'] as int;
-  final rows = (json['rows'] as List).cast<String>();
+  final id = json['id'] as String?;
+  final name = json['name'] as String?;
+  final parRotations = json['parRotations'] as int?;
+  final rowsDynamic = json['rows'];
+
+  if (id == null || id.isEmpty) {
+    throw const FormatException('Level json is missing non-empty "id"');
+  }
+  if (name == null || name.isEmpty) {
+    throw FormatException('Level "$id" is missing non-empty "name"');
+  }
+  if (parRotations == null) {
+    throw FormatException('Level "$id" is missing integer "parRotations"');
+  }
+  if (rowsDynamic is! List) {
+    throw FormatException('Level "$id" is missing list "rows"');
+  }
+
+  final rows = rowsDynamic.cast<String>();
 
   if (rows.isEmpty) {
     throw FormatException('Level "$id" has no rows');
@@ -67,16 +74,25 @@ Level _parseLevelFromJson(Map<String, dynamic> json) {
 
   Position? startPos;
   Position? goalPos;
+  var startCount = 0;
+  var goalCount = 0;
+
   final gridTypes = List.generate(rows.length, (r) {
     return List.generate(width, (c) {
       final type = _charToCellType(rows[r][c]);
-      if (type == CellType.start) startPos = Position(r, c);
-      if (type == CellType.goal) goalPos = Position(r, c);
+      if (type == CellType.start) {
+        startCount++;
+        startPos = Position(r, c);
+      }
+      if (type == CellType.goal) {
+        goalCount++;
+        goalPos = Position(r, c);
+      }
       return type;
     });
   });
 
-  if (startPos == null || goalPos == null) {
+  if (startCount != 1 || goalCount != 1 || startPos == null || goalPos == null) {
     throw FormatException('Level "$id" must include exactly one S and one G');
   }
 
@@ -106,60 +122,9 @@ Future<List<Level>> loadLevels() async {
   final tutorialLevel = await loadLevelFromAsset(
     'assets/levels/level_00_tutorial.json',
   );
-
-  final level1 = Level(
-    id: 'level_01',
-    name: 'First Glance',
-    gridRows: 5,
-    gridCols: 5,
-    startPos: const Position(4, 0),
-    goalPos: const Position(0, 4),
-    parRotations: 1,
-    grid: _buildGrid([
-      [f, f, f, f, g],
-      [w, w, f, w, w],
-      [f, pN, f, pN, f],
-      [f, w, w, w, f],
-      [s, f, f, f, f],
-    ]),
-  );
-
-  final level2 = Level(
-    id: 'level_02',
-    name: 'Shift & Step',
-    gridRows: 6,
-    gridCols: 6,
-    startPos: const Position(5, 0),
-    goalPos: const Position(0, 5),
-    parRotations: 2,
-    grid: _buildGrid([
-      [f, pE, f, f, f, g],
-      [f, w, w, w, f, w],
-      [f, f, f, w, f, f],
-      [w, w, pS, w, w, f],
-      [f, f, f, f, pW, f],
-      [s, f, w, w, f, f],
-    ]),
-  );
-
-  final level3 = Level(
-    id: 'level_03',
-    name: 'Through the Looking Glass',
-    gridRows: 7,
-    gridCols: 7,
-    startPos: const Position(6, 0),
-    goalPos: const Position(0, 6),
-    parRotations: 3,
-    grid: _buildGrid([
-      [f, f, f, f, f, f, g],
-      [w, pN, w, pE, w, pS, w],
-      [f, f, f, f, f, f, f],
-      [w, pW, w, f, w, pN, w],
-      [f, f, f, pE, f, f, f],
-      [w, pS, w, w, w, pW, w],
-      [s, f, f, f, f, f, f],
-    ]),
-  );
+  final level1 = await loadLevelFromAsset('assets/levels/level_01.json');
+  final level2 = await loadLevelFromAsset('assets/levels/level_02.json');
+  final level3 = await loadLevelFromAsset('assets/levels/level_03.json');
 
   _levelsCache = [tutorialLevel, level1, level2, level3];
   return _levelsCache!;
