@@ -1,0 +1,19 @@
+{
+  "id": "level_13",
+  "name": "Offset Spiral",
+  "hint": "The route is strict enough that one sloppy turn echoes forward.",
+  "parRotations": 5,
+  "rows": [
+    "###########",
+    "#E.....G###",
+    "#.#########",
+    "#.......N##",
+    "########.##",
+    "###T....W##",
+    "###.#######",
+    "###......E#",
+    "#########.#",
+    "#S........#",
+    "###########"
+  ]
+}

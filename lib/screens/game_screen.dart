@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart' hide Direction;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../utils/monetization_config.dart';
 import '../utils/routes.dart';
 import '../utils/vantage_theme.dart';
 import '../widgets/board_widget.dart';
 import '../widgets/hud_bar.dart';
 import '../widgets/settings_sheet.dart';
 import '../widgets/star_rating.dart';
-import '../models/level_progress.dart' show starsEarned;
 import 'completion_screen.dart';
+import 'upgrade_screen.dart';
 
 /// The main puzzle-play screen.
 class GameScreen extends ConsumerStatefulWidget {
@@ -24,6 +26,8 @@ class GameScreen extends ConsumerStatefulWidget {
 }
 
 class _GameScreenState extends ConsumerState<GameScreen> {
+  static const double _boardCellSize = 48;
+
   final FocusNode _focusNode = FocusNode();
   int _blockedMoveTick = 0;
   bool _isVictoryDialogOpen = false;
@@ -99,7 +103,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
       }
     });
 
-    Widget board = BoardWidget(gameState: gameState);
+    Widget board = BoardWidget(gameState: gameState, cellSize: _boardCellSize);
     if (_blockedMoveTick > 0) {
       board = board
           .animate(key: ValueKey(_blockedMoveTick))
@@ -147,23 +151,21 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               child: GestureDetector(
                 onPanEnd: (details) => _handleSwipe(details.velocity),
                 child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Scrollbar(
-                      thumbVisibility: false,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: SingleChildScrollView(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minWidth: constraints.maxWidth,
-                              minHeight: constraints.maxHeight,
-                            ),
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(24),
-                                child: board,
-                              ),
-                            ),
+                  builder: (context, _) {
+                    final boardWidth =
+                        gameState.level.gridCols * _boardCellSize;
+                    final boardHeight =
+                        gameState.level.gridRows * _boardCellSize;
+
+                    return Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: SizedBox(
+                            width: boardWidth,
+                            height: boardHeight,
+                            child: board,
                           ),
                         ),
                       ),
@@ -218,12 +220,19 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     _victoryShownForLevelId = gameState.level.id;
 
     final levelsNow = ref.read(levelsProvider).valueOrNull;
+    final hasFullGame =
+        ref.read(monetizationProvider).valueOrNull?.hasFullGame ?? false;
     var hasNextLevel = false;
+    var nextRequiresUnlock = false;
     if (levelsNow != null) {
       final currentIdx = levelsNow.indexWhere(
         (l) => l.id == gameState.level.id,
       );
       hasNextLevel = currentIdx >= 0 && currentIdx + 1 < levelsNow.length;
+      nextRequiresUnlock =
+          hasNextLevel &&
+          !hasFullGame &&
+          !MonetizationConfig.isInFreeChapter(currentIdx + 1);
     }
 
     showDialog<void>(
@@ -234,6 +243,7 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         rotationCount: gameState.rotationCount,
         parRotations: widget.level.parRotations,
         hasNextLevel: hasNextLevel,
+        nextRequiresUnlock: nextRequiresUnlock,
         onNext: () async {
           Navigator.of(dialogContext).pop(); // close dialog
           final resolvedLevels =
@@ -247,7 +257,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
               ? resolvedLevels[idx + 1]
               : null;
 
-          if (nextLevel != null) {
+          if (nextLevel != null &&
+              !hasFullGame &&
+              !MonetizationConfig.isInFreeChapter(idx + 1)) {
+            Navigator.of(context).pushReplacement(
+              fadeSlideRoute<void>(UpgradeScreen(targetLevel: nextLevel)),
+            );
+          } else if (nextLevel != null) {
             Navigator.of(context).pushReplacement(
               fadeSlideRoute<void>(GameScreen(level: nextLevel)),
             );
@@ -427,6 +443,7 @@ class _VictoryDialog extends StatelessWidget {
   final int rotationCount;
   final int parRotations;
   final bool hasNextLevel;
+  final bool nextRequiresUnlock;
   final VoidCallback onNext;
   final VoidCallback onReplay;
 
@@ -435,6 +452,7 @@ class _VictoryDialog extends StatelessWidget {
     required this.rotationCount,
     required this.parRotations,
     required this.hasNextLevel,
+    required this.nextRequiresUnlock,
     required this.onNext,
     required this.onReplay,
   });
@@ -469,6 +487,19 @@ class _VictoryDialog extends StatelessWidget {
                 color: stars == 3 ? VantageTheme.accent : Colors.white54,
               ),
             ),
+            if (nextRequiresUnlock)
+              const Padding(
+                padding: EdgeInsets.only(top: 10),
+                child: Text(
+                  'You cleared the free chapter. The next level is part of the full game.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white60,
+                    fontSize: 12,
+                    height: 1.35,
+                  ),
+                ),
+              ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -481,7 +512,13 @@ class _VictoryDialog extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: onNext,
                   icon: const Icon(Icons.arrow_forward, size: 16),
-                  label: Text(hasNextLevel ? 'NEXT' : 'FINISH'),
+                  label: Text(
+                    nextRequiresUnlock
+                        ? 'UNLOCK'
+                        : hasNextLevel
+                        ? 'NEXT'
+                        : 'FINISH',
+                  ),
                 ),
               ],
             ),

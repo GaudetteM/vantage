@@ -1,11 +1,17 @@
 {
   "id": "level_07",
-  "name": "Half Then Quarter",
-  "hint": "A half-turn gets you started, but the finish needs a more precise angle.",
+  "name": "Split Decision",
+  "hint": "The corridor is longer now. Think about gate three from gate one.",
   "parRotations": 3,
   "rows": [
-    "#######",
-    "S.T.W.G",
-    "#######"
+    "#########",
+    "#G.....##",
+    "######.##",
+    "###T..E##",
+    "###.#####",
+    "###E....#",
+    "#######.#",
+    "#S......#",
+    "#########"
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "id": "level_09",
+  "name": "Broken Ring",
+  "hint": "A long weave with one correct rhythm. Guessing won\u2019t get you through.",
+  "parRotations": 5,
+  "rows": [
+    "#########",
+    "#G....W##",
+    "######.##",
+    "###...N##",
+    "###.#####",
+    "###T...W#",
+    "#######.#",
+    "#S......#",
+    "#########"
+  ]
+}

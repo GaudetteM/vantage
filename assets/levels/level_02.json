@@ -1,14 +1,14 @@
 {
   "id": "level_02",
-  "name": "Shift & Step",
-  "hint": "One rotation opens the right path, but rotating too early can strand you.",
-  "parRotations": 2,
+  "name": "Back Corner",
+  "hint": "Rotate the other way this time. The route is tighter now.",
+  "parRotations": 1,
   "rows": [
-    ".E...G",
-    ".###.#",
-    "...#..",
-    "##T##.",
-    "....W.",
-    "S.##.."
+    "######",
+    "##G###",
+    "#.W###",
+    "#.####",
+    "#...S#",
+    "######"
   ]
 }

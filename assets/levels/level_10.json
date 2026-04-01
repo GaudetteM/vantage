@@ -1,0 +1,18 @@
+{
+  "id": "level_10",
+  "name": "Drift Maze",
+  "hint": "The weave is longer, not wider. Keep your rotation state under control.",
+  "parRotations": 4,
+  "rows": [
+    "##########",
+    "########G#",
+    "##......N#",
+    "##.#######",
+    "##W...T###",
+    "######.###",
+    "#E.....###",
+    "#.########",
+    "#.......S#",
+    "##########"
+  ]
+}

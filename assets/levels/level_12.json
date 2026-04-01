@@ -1,0 +1,18 @@
+{
+  "id": "level_12",
+  "name": "Pinwheel",
+  "hint": "The gates keep shifting demands. Recovering late is expensive.",
+  "parRotations": 7,
+  "rows": [
+    "##########",
+    "########G#",
+    "##W.....E#",
+    "##.#######",
+    "##N....###",
+    "######.###",
+    "#W....T###",
+    "#.########",
+    "#.......S#",
+    "##########"
+  ]
+}

@@ -1,11 +1,17 @@
 {
   "id": "level_08",
   "name": "Full Cycle",
-  "hint": "Every direction matters here. The shortest route uses the full rotation loop.",
+  "hint": "This route needs the full orientation loop to stay open.",
   "parRotations": 4,
   "rows": [
-    "###########",
-    "S.E.T.W.N.G",
-    "###########"
+    "#########",
+    "##N....G#",
+    "##.######",
+    "##W...###",
+    "#####.###",
+    "#E...T###",
+    "#.#######",
+    "#......S#",
+    "#########"
   ]
 }

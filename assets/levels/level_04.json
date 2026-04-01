@@ -1,11 +1,15 @@
 {
   "id": "level_04",
-  "name": "Double Vision",
-  "hint": "Two gates share the same rotation. Spot the repeated color and commit.",
-  "parRotations": 1,
+  "name": "Cross Current",
+  "hint": "The route doubles back. Set the next gate before the bend.",
+  "parRotations": 2,
   "rows": [
     "#######",
-    "S.E.E.G",
+    "##GT###",
+    "###.###",
+    "#W..###",
+    "#.#####",
+    "#....S#",
     "#######"
   ]
 }

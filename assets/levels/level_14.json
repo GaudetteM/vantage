@@ -1,0 +1,19 @@
+{
+  "id": "level_14",
+  "name": "Labyrinth Shift",
+  "hint": "A longer corridor with very little forgiveness in the sequence.",
+  "parRotations": 6,
+  "rows": [
+    "###########",
+    "###G.....T#",
+    "#########.#",
+    "##N......E#",
+    "##.########",
+    "##.....W###",
+    "#######.###",
+    "#E.....T###",
+    "#.#########",
+    "#........S#",
+    "###########"
+  ]
+}

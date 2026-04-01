@@ -1,15 +1,15 @@
 {
   "id": "level_03",
-  "name": "Through the Looking Glass",
-  "hint": "This one is about sequencing. Open one route, move, then pivot again.",
-  "parRotations": 3,
+  "name": "Twin Corridors",
+  "hint": "Two gates, two rotations. Don\u2019t spend them too early.",
+  "parRotations": 2,
   "rows": [
-    "......G",
-    "#N#E#T#",
-    ".......",
-    "#W#.#N#",
-    "...E...",
-    "#T###W#",
-    "S......"
+    "#######",
+    "###TG##",
+    "###.###",
+    "###..E#",
+    "#####.#",
+    "#S....#",
+    "#######"
   ]
 }

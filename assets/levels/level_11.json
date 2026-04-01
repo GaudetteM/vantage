@@ -1,0 +1,18 @@
+{
+  "id": "level_11",
+  "name": "Pressure Lanes",
+  "hint": "Five rotations minimum. Count the whole sequence before you commit.",
+  "parRotations": 5,
+  "rows": [
+    "##########",
+    "#G########",
+    "#E.....N##",
+    "#######.##",
+    "###....W##",
+    "###.######",
+    "###T....E#",
+    "########.#",
+    "#S.......#",
+    "##########"
+  ]
+}

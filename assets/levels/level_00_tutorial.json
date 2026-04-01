@@ -1,11 +1,13 @@
 {
   "id": "level_00_tutorial",
-  "name": "Tutorial: Rotate to Open",
-  "hint": "Purple gates open only at one rotation. Rotate once, then walk through.",
+  "name": "Tutorial: First Shift",
+  "hint": "Rotate once to open the gate, then finish.",
   "parRotations": 1,
   "rows": [
     "#####",
     "S.E.G",
+    "#####",
+    "#####",
     "#####"
   ]
 }

@@ -2,14 +2,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/models.dart';
 import '../providers/providers.dart';
+import '../utils/monetization_config.dart';
 import '../utils/routes.dart';
-import '../models/level_progress.dart' show starsEarned;
 import '../utils/vantage_theme.dart';
 import '../widgets/settings_sheet.dart';
 import '../widgets/star_rating.dart';
 import 'game_screen.dart';
+import 'upgrade_screen.dart';
 
 /// Level-selection hub screen.
 class LevelSelectScreen extends ConsumerWidget {
@@ -19,6 +21,7 @@ class LevelSelectScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final levelsAsync = ref.watch(levelsProvider);
     final progressAsync = ref.watch(progressProvider);
+    final monetizationAsync = ref.watch(monetizationProvider);
 
     return Scaffold(
       backgroundColor: VantageTheme.background,
@@ -26,10 +29,9 @@ class LevelSelectScreen extends ConsumerWidget {
         backgroundColor: VantageTheme.surface,
         title: Text(
           'VANTAGE',
-          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                fontSize: 22,
-                letterSpacing: 8,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineLarge?.copyWith(fontSize: 22, letterSpacing: 8),
         ),
         centerTitle: true,
         actions: [
@@ -58,28 +60,114 @@ class LevelSelectScreen extends ConsumerWidget {
         data: (levels) => progressAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(child: Text('Error: $e')),
-          data: (progress) => GridView.builder(
-            padding: const EdgeInsets.all(24),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 160,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              mainAxisExtent: 160,
+          data: (progress) => monetizationAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(child: Text('Error: $e')),
+            data: (monetization) => Column(
+              children: [
+                if (!monetization.hasFullGame)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                    child: _FreeChapterBanner(
+                      onTap: () => Navigator.of(
+                        context,
+                      ).push(fadeSlideRoute<void>(const UpgradeScreen())),
+                    ),
+                  ),
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(24),
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 160,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          mainAxisExtent: 160,
+                        ),
+                    itemCount: levels.length,
+                    itemBuilder: (context, i) {
+                      final level = levels[i];
+                      final p =
+                          progress[level.id] ??
+                          LevelProgress(levelId: level.id);
+                      final isPremiumLocked =
+                          !monetization.hasFullGame &&
+                          !MonetizationConfig.isInFreeChapter(i);
+                      return _LevelCard(
+                            level: level,
+                            progress: p,
+                            index: i,
+                            isPremiumLocked: isPremiumLocked,
+                          )
+                          .animate(delay: (80 * i).ms)
+                          .fadeIn(duration: 300.ms)
+                          .slideY(begin: 0.2, end: 0);
+                    },
+                  ),
+                ),
+              ],
             ),
-            itemCount: levels.length,
-            itemBuilder: (context, i) {
-              final level = levels[i];
-              final p = progress[level.id] ?? LevelProgress(levelId: level.id);
-              return _LevelCard(
-                level: level,
-                progress: p,
-                index: i,
-              )
-                  .animate(delay: (80 * i).ms)
-                  .fadeIn(duration: 300.ms)
-                  .slideY(begin: 0.2, end: 0);
-            },
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FreeChapterBanner extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _FreeChapterBanner({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          color: VantageTheme.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: VantageTheme.accentDim, width: 1.2),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.lock_open_rounded, color: VantageTheme.accent),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${MonetizationConfig.freeLevelCount} FREE LEVELS',
+                    style: const TextStyle(
+                      color: VantageTheme.accent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Finish the free chapter, then unlock the rest with one purchase.',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white38,
+              size: 16,
+            ),
+          ],
         ),
       ),
     );
@@ -90,15 +178,19 @@ class _LevelCard extends StatelessWidget {
   final Level level;
   final LevelProgress progress;
   final int index;
+  final bool isPremiumLocked;
 
   const _LevelCard({
     required this.level,
     required this.progress,
     required this.index,
+    required this.isPremiumLocked,
   });
 
   Color _borderColor(LevelProgress p, int par) {
-    if (!p.isCompleted) return p.isUnlocked ? VantageTheme.accentDim : Colors.white12;
+    if (!p.isCompleted) {
+      return p.isUnlocked ? VantageTheme.accentDim : Colors.white12;
+    }
     final stars = starsEarned(p.bestRotations!, par);
     if (stars == 3) return VantageTheme.goalColor;
     if (stars == 2) return VantageTheme.goalColor.withAlpha(160);
@@ -107,17 +199,25 @@ class _LevelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final locked = !progress.isUnlocked;
+    final locked = !progress.isUnlocked || isPremiumLocked;
 
     return GestureDetector(
       onTap: locked
-          ? null
-          : () => Navigator.of(context)
-                .push(fadeSlideRoute<void>(GameScreen(level: level))),
+          ? () {
+              if (!isPremiumLocked) return;
+              Navigator.of(
+                context,
+              ).push(fadeSlideRoute<void>(UpgradeScreen(targetLevel: level)));
+            }
+          : () => Navigator.of(
+              context,
+            ).push(fadeSlideRoute<void>(GameScreen(level: level))),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: locked ? VantageTheme.surface.withAlpha(120) : VantageTheme.surface,
+          color: locked
+              ? VantageTheme.surface.withAlpha(120)
+              : VantageTheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: _borderColor(progress, level.parRotations),
@@ -130,17 +230,28 @@ class _LevelCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (locked)
+              if (isPremiumLocked)
+                const Icon(
+                  Icons.workspace_premium,
+                  color: Colors.white38,
+                  size: 28,
+                )
+              else if (locked)
                 const Icon(Icons.lock, color: Colors.white24, size: 28)
               else if (progress.isCompleted && progress.bestRotations != null)
                 StarRating(
                   stars: starsEarned(
-                      progress.bestRotations!, level.parRotations),
+                    progress.bestRotations!,
+                    level.parRotations,
+                  ),
                   size: 20,
                 )
               else
-                const Icon(Icons.grid_view,
-                    color: VantageTheme.accent, size: 28),
+                const Icon(
+                  Icons.grid_view,
+                  color: VantageTheme.accent,
+                  size: 28,
+                ),
               const SizedBox(height: 6),
               Text(
                 '${index + 1}',
@@ -161,13 +272,25 @@ class _LevelCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (progress.isCompleted && progress.bestRotations != null)
+              if (isPremiumLocked)
+                const Padding(
+                  padding: EdgeInsets.only(top: 4),
+                  child: Text(
+                    'FULL GAME',
+                    style: TextStyle(
+                      color: Colors.white38,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                )
+              else if (progress.isCompleted && progress.bestRotations != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
                     '${progress.bestRotations} / par ${level.parRotations}',
-                    style: const TextStyle(
-                        color: Colors.white38, fontSize: 9),
+                    style: const TextStyle(color: Colors.white38, fontSize: 9),
                   ),
                 ),
             ],

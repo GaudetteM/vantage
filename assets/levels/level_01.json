@@ -1,13 +1,14 @@
 {
   "id": "level_01",
-  "name": "First Glance",
-  "hint": "Not every colored gate needs a rotation. Look for the free route first.",
+  "name": "Forked Entry",
+  "hint": "One turn opens the first choke point. Stay on the corridor.",
   "parRotations": 1,
   "rows": [
-    "....G",
-    "##.##",
-    ".N.N.",
-    ".###.",
-    "S...."
+    "######",
+    "###G##",
+    "###E.#",
+    "####.#",
+    "#S...#",
+    "######"
   ]
 }

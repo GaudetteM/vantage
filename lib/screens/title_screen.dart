@@ -31,8 +31,9 @@ class _TitleScreenState extends State<TitleScreen>
   }
 
   void _go() {
-    Navigator.of(context)
-        .pushReplacement(fadeRoute<void>(const LevelSelectScreen()));
+    Navigator.of(
+      context,
+    ).pushReplacement(fadeRoute<void>(const LevelSelectScreen()));
   }
 
   @override
@@ -67,14 +68,14 @@ class _TitleScreenState extends State<TitleScreen>
 
                   // Title
                   const Text(
-                    'VANTAGE',
-                    style: TextStyle(
-                      color: VantageTheme.accent,
-                      fontSize: 46,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 12,
-                    ),
-                  )
+                        'VANTAGE',
+                        style: TextStyle(
+                          color: VantageTheme.accent,
+                          fontSize: 46,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 12,
+                        ),
+                      )
                       .animate(delay: 300.ms)
                       .fadeIn(duration: 500.ms)
                       .slideY(begin: 0.2, end: 0),
@@ -89,20 +90,20 @@ class _TitleScreenState extends State<TitleScreen>
                       letterSpacing: 4,
                       fontWeight: FontWeight.w500,
                     ),
-                  )
-                      .animate(delay: 450.ms)
-                      .fadeIn(duration: 500.ms),
+                  ).animate(delay: 450.ms).fadeIn(duration: 500.ms),
 
                   const SizedBox(height: 72),
 
                   // Tap prompt
                   AnimatedBuilder(
                     animation: _pulseController,
-                    builder: (_, __) {
-                      final opacity = 0.35 +
+                    builder: (context, child) {
+                      final opacity =
+                          0.35 +
                           0.65 *
-                              Curves.easeInOut
-                                  .transform(_pulseController.value);
+                              Curves.easeInOut.transform(
+                                _pulseController.value,
+                              );
                       return Opacity(
                         opacity: opacity,
                         child: const Text(
@@ -160,26 +161,42 @@ class _LogoDiamond extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           // Outer ring dots (direction colours)
-          _dot(Alignment.topCenter, VantageTheme.perspectiveNorthColor, dotSize),
-          _dot(Alignment.centerRight, VantageTheme.perspectiveEastColor, dotSize),
-          _dot(Alignment.bottomCenter, VantageTheme.perspectiveSouthColor, dotSize),
-          _dot(Alignment.centerLeft, VantageTheme.perspectiveWestColor, dotSize),
+          _dot(
+            Alignment.topCenter,
+            VantageTheme.perspectiveNorthColor,
+            dotSize,
+          ),
+          _dot(
+            Alignment.centerRight,
+            VantageTheme.perspectiveEastColor,
+            dotSize,
+          ),
+          _dot(
+            Alignment.bottomCenter,
+            VantageTheme.perspectiveSouthColor,
+            dotSize,
+          ),
+          _dot(
+            Alignment.centerLeft,
+            VantageTheme.perspectiveWestColor,
+            dotSize,
+          ),
 
           // Centre accent dot
           Container(
-            width: 14,
-            height: 14,
-            decoration: BoxDecoration(
-              color: VantageTheme.accent,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: VantageTheme.accent.withAlpha(160),
-                  blurRadius: 14,
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: VantageTheme.accent,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: VantageTheme.accent.withAlpha(160),
+                      blurRadius: 14,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          )
+              )
               .animate(onPlay: (c) => c.repeat(reverse: true))
               .scaleXY(begin: 0.85, end: 1.15, duration: 1200.ms),
         ],
@@ -212,9 +229,7 @@ class _DiamondGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _DiamondGridPainter(),
-    );
+    return CustomPaint(painter: _DiamondGridPainter());
   }
 }
 

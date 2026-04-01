@@ -1,11 +1,16 @@
 {
   "id": "level_06",
-  "name": "Pivot Break",
-  "hint": "You will need to revisit a direction. Think in pivots, not straight lines.",
+  "name": "Backtrack Bloom",
+  "hint": "No wasted space here. Every bend exists for the sequence.",
   "parRotations": 3,
   "rows": [
-    "#######",
-    "S.E.W.G",
-    "#######"
+    "########",
+    "##G#####",
+    "##E..###",
+    "####.###",
+    "#W..T###",
+    "#.######",
+    "#.....S#",
+    "########"
   ]
 }

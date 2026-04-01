@@ -20,6 +20,9 @@ dependencies:
   # Persistent storage (level progress, settings)
   shared_preferences: ^2.3.2
 
+  # One-time full-game unlock
+  in_app_purchase: ^3.2.3
+
   # Audio
   audioplayers: ^6.1.0
 

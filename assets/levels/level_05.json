@@ -1,11 +1,16 @@
 {
   "id": "level_05",
-  "name": "Quarter Turn Chain",
-  "hint": "This path wants a clean two-step rhythm. Rotate, move, rotate again.",
-  "parRotations": 2,
+  "name": "Gatehouse",
+  "hint": "Three gates along one weave. Read the full chain before moving.",
+  "parRotations": 3,
   "rows": [
-    "#######",
-    "S.E.T.G",
-    "#######"
+    "########",
+    "#####G##",
+    "###..W##",
+    "###.####",
+    "###T..E#",
+    "######.#",
+    "#S.....#",
+    "########"
   ]
 }

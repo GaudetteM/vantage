@@ -1,0 +1,19 @@
+{
+  "id": "level_15",
+  "name": "Final Convergence",
+  "hint": "A final long-form chain. Read the entire path before the first move.",
+  "parRotations": 6,
+  "rows": [
+    "###########",
+    "#......G###",
+    "#.#########",
+    "#N......W##",
+    "########.##",
+    "###E.....##",
+    "###.#######",
+    "###T......#",
+    "#########.#",
+    "#S........#",
+    "###########"
+  ]
+}
